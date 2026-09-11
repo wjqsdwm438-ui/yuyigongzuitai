@@ -1,0 +1,16 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "semantic-rule-workbench"
+version = "0.1.0"
+description = "本地语义规则工作台：规则、世界模型、案例与决策证据"
+requires-python = ">=3.11"
+dependencies = []
+
+[project.scripts]
+workbench = "语义工作台.cli:main"
+
+[tool.setuptools.packages.find]
+where = ["源码-src"]

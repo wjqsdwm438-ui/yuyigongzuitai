@@ -1,0 +1,8 @@
+/.环境-venv/
+/数据-data/
+/导出-exports/
+/临时-tmp/
+__pycache__/
+*.pyc
+*.egg-info/
+.env

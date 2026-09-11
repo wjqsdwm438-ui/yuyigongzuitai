@@ -1,0 +1,201 @@
+{
+  "format_version": 1,
+  "captured_at_utc": "2026-09-09T16:55:46.786299+00:00",
+  "status": "reference_only_not_installed_or_executed",
+  "boundary": "仅匿名公开HTTPS读取；原文保存；不执行上游指令或脚本；不装包、不读密钥、不调用模型API；下游方法适配不获得生产写入或发布权限。",
+  "repositories": [
+    {
+      "repository": "getsentry/skills",
+      "url": "https://github.com/getsentry/skills",
+      "commit": "c2f99a5b04b4cd992ec3022d7c2c3e23e938d241",
+      "resolved_ref": "main",
+      "local_directory": "哨兵-sentry-skills",
+      "commit_committer_date_utc": "2026-08-25T14:33:48Z",
+      "head_resolution_url": "https://api.github.com/repos/getsentry/skills/commits/main",
+      "pinned_tree_url": "https://api.github.com/repos/getsentry/skills/git/trees/c2f99a5b04b4cd992ec3022d7c2c3e23e938d241?recursive=1",
+      "license": "Apache-2.0",
+      "license_upstream_path": "LICENSE"
+    },
+    {
+      "repository": "anthropics/skills",
+      "url": "https://github.com/anthropics/skills",
+      "commit": "41bbe19d1a1a7eaab5e7bb9050a417e5c6cffc8f",
+      "resolved_ref": "main",
+      "local_directory": "安索匹克-anthropic-skills",
+      "commit_committer_date_utc": "2026-09-03T16:37:13Z",
+      "head_resolution_url": "https://api.github.com/repos/anthropics/skills/commits/main",
+      "pinned_tree_url": "https://api.github.com/repos/anthropics/skills/git/trees/41bbe19d1a1a7eaab5e7bb9050a417e5c6cffc8f?recursive=1",
+      "license": "Apache-2.0 for selected skill-creator files; not a repository-wide assertion",
+      "license_upstream_path": "skills/skill-creator/LICENSE.txt"
+    }
+  ],
+  "files": [
+    {
+      "repository": "getsentry/skills",
+      "commit": "c2f99a5b04b4cd992ec3022d7c2c3e23e938d241",
+      "upstream_path": "LICENSE",
+      "local_path": "哨兵-sentry-skills/LICENSE",
+      "url": "https://raw.githubusercontent.com/getsentry/skills/c2f99a5b04b4cd992ec3022d7c2c3e23e938d241/LICENSE",
+      "purpose": "上游仓库许可证原件",
+      "bytes": 10785,
+      "sha256": "96e78a9ce85795b117c8929887bdb78f88bf23f7b85a31f0872cde4dff7e92cd",
+      "git_blob_sha1": "753a6c03c60a9232405d05170bd3ad3cab49a1ef"
+    },
+    {
+      "repository": "getsentry/skills",
+      "commit": "c2f99a5b04b4cd992ec3022d7c2c3e23e938d241",
+      "upstream_path": "skills/skill-writer/SKILL.md",
+      "local_path": "哨兵-sentry-skills/skills/skill-writer/SKILL.md",
+      "url": "https://raw.githubusercontent.com/getsentry/skills/c2f99a5b04b4cd992ec3022d7c2c3e23e938d241/skills/skill-writer/SKILL.md",
+      "purpose": "技能编写总入口与模式选择",
+      "bytes": 10017,
+      "sha256": "d8597ec2e5f00cc8d87a73741369c7cc433a3bbb95801169c35e84a10d514d26",
+      "git_blob_sha1": "8aba371f5f4d8005fcbcf3ab3aa68550c5687d53"
+    },
+    {
+      "repository": "getsentry/skills",
+      "commit": "c2f99a5b04b4cd992ec3022d7c2c3e23e938d241",
+      "upstream_path": "skills/skill-writer/references/mode-selection.md",
+      "local_path": "哨兵-sentry-skills/skills/skill-writer/references/mode-selection.md",
+      "url": "https://raw.githubusercontent.com/getsentry/skills/c2f99a5b04b4cd992ec3022d7c2c3e23e938d241/skills/skill-writer/references/mode-selection.md",
+      "purpose": "合成、新写、证据驱动迭代的路由",
+      "bytes": 3310,
+      "sha256": "85d0b083cfc6c3e50cd768cd0c56cb3e655aad88a97314166963d664c8a67864",
+      "git_blob_sha1": "61e4a2bc66b463b7bd6b202a3dc6514588509f8e"
+    },
+    {
+      "repository": "getsentry/skills",
+      "commit": "c2f99a5b04b4cd992ec3022d7c2c3e23e938d241",
+      "upstream_path": "skills/skill-writer/references/authoring-path.md",
+      "local_path": "哨兵-sentry-skills/skills/skill-writer/references/authoring-path.md",
+      "url": "https://raw.githubusercontent.com/getsentry/skills/c2f99a5b04b4cd992ec3022d7c2c3e23e938d241/skills/skill-writer/references/authoring-path.md",
+      "purpose": "修改前后精确检查和最小合适结构",
+      "bytes": 4772,
+      "sha256": "57bc70a7deca70867df77ce3659288b4377223bde7b13ef5e8c218cd53a6de3b",
+      "git_blob_sha1": "81e697d0d480b2e21355c7e2ad196b9a2543b046"
+    },
+    {
+      "repository": "getsentry/skills",
+      "commit": "c2f99a5b04b4cd992ec3022d7c2c3e23e938d241",
+      "upstream_path": "skills/skill-writer/references/iteration-path.md",
+      "local_path": "哨兵-sentry-skills/skills/skill-writer/references/iteration-path.md",
+      "url": "https://raw.githubusercontent.com/getsentry/skills/c2f99a5b04b4cd992ec3022d7c2c3e23e938d241/skills/skill-writer/references/iteration-path.md",
+      "purpose": "正反例、失败分类、基线与留出迭代",
+      "bytes": 1505,
+      "sha256": "d7f9a2d145e84e7bfd8cf94ffb083ecc52e4611077019007174766a50649eb90",
+      "git_blob_sha1": "4a979365b938aaf4cf12ed06db827ea37b970242"
+    },
+    {
+      "repository": "getsentry/skills",
+      "commit": "c2f99a5b04b4cd992ec3022d7c2c3e23e938d241",
+      "upstream_path": "skills/skill-writer/references/skill-evals.md",
+      "local_path": "哨兵-sentry-skills/skills/skill-writer/references/skill-evals.md",
+      "url": "https://raw.githubusercontent.com/getsentry/skills/c2f99a5b04b4cd992ec3022d7c2c3e23e938d241/skills/skill-writer/references/skill-evals.md",
+      "purpose": "触发与真实产物、权限和行为评测",
+      "bytes": 5771,
+      "sha256": "6bba3ac97c78d66bd7df0c3b25ed153d43092c25588dfdb286f506b4930840f4",
+      "git_blob_sha1": "a0dbe5e801a4126f7a2da11b6033f2337971d075"
+    },
+    {
+      "repository": "getsentry/skills",
+      "commit": "c2f99a5b04b4cd992ec3022d7c2c3e23e938d241",
+      "upstream_path": "skills/skill-writer/references/source-adaptation.md",
+      "local_path": "哨兵-sentry-skills/skills/skill-writer/references/source-adaptation.md",
+      "url": "https://raw.githubusercontent.com/getsentry/skills/c2f99a5b04b4cd992ec3022d7c2c3e23e938d241/skills/skill-writer/references/source-adaptation.md",
+      "purpose": "提取行为机制并按本地约束改写",
+      "bytes": 2194,
+      "sha256": "9b44da8a76f5b0280336ccb94407c3a014fafff02bf4c46979f5db0356718980",
+      "git_blob_sha1": "69b5805966ca8bbe3781caa9558b95cfffa348f9"
+    },
+    {
+      "repository": "getsentry/skills",
+      "commit": "c2f99a5b04b4cd992ec3022d7c2c3e23e938d241",
+      "upstream_path": "skills/prompt-optimizer/SKILL.md",
+      "local_path": "哨兵-sentry-skills/skills/prompt-optimizer/SKILL.md",
+      "url": "https://raw.githubusercontent.com/getsentry/skills/c2f99a5b04b4cd992ec3022d7c2c3e23e938d241/skills/prompt-optimizer/SKILL.md",
+      "purpose": "提示词目标、约束、评测驱动优化",
+      "bytes": 4613,
+      "sha256": "b5ba1525d7964004d8664fea9d5028972cca599f346ff4662152479b94e25cb3",
+      "git_blob_sha1": "b8132d287dbb6b3eac120514e9b5728dd431f7fc"
+    },
+    {
+      "repository": "getsentry/skills",
+      "commit": "c2f99a5b04b4cd992ec3022d7c2c3e23e938d241",
+      "upstream_path": "skills/prompt-optimizer/references/meta-optimization-loop.md",
+      "local_path": "哨兵-sentry-skills/skills/prompt-optimizer/references/meta-optimization-loop.md",
+      "url": "https://raw.githubusercontent.com/getsentry/skills/c2f99a5b04b4cd992ec3022d7c2c3e23e938d241/skills/prompt-optimizer/references/meta-optimization-loop.md",
+      "purpose": "同题多候选、量表、比较与停止条件",
+      "bytes": 3710,
+      "sha256": "9489e6ee08a184319a3ac3e88de54ea9f91bc2da74e4ee2dd8ada662291a9e71",
+      "git_blob_sha1": "6aa685c61207d333b39eab6528c783ddbe01a9a7"
+    },
+    {
+      "repository": "anthropics/skills",
+      "commit": "41bbe19d1a1a7eaab5e7bb9050a417e5c6cffc8f",
+      "upstream_path": "skills/skill-creator/LICENSE.txt",
+      "local_path": "安索匹克-anthropic-skills/skills/skill-creator/LICENSE.txt",
+      "url": "https://raw.githubusercontent.com/anthropics/skills/41bbe19d1a1a7eaab5e7bb9050a417e5c6cffc8f/skills/skill-creator/LICENSE.txt",
+      "purpose": "所参考技能的特定许可证原件",
+      "bytes": 11345,
+      "sha256": "bc6b3af2f331cbc7fb0da1344efb2cbe5877a31498b4d70dbc7000f3405a1362",
+      "git_blob_sha1": "4f881c52d1f72f4cfb720e339e2d35c3058d01a9"
+    },
+    {
+      "repository": "anthropics/skills",
+      "commit": "41bbe19d1a1a7eaab5e7bb9050a417e5c6cffc8f",
+      "upstream_path": "THIRD_PARTY_NOTICES.md",
+      "local_path": "安索匹克-anthropic-skills/THIRD_PARTY_NOTICES.md",
+      "url": "https://raw.githubusercontent.com/anthropics/skills/41bbe19d1a1a7eaab5e7bb9050a417e5c6cffc8f/THIRD_PARTY_NOTICES.md",
+      "purpose": "上游第三方声明原件",
+      "bytes": 46162,
+      "sha256": "a8ff7a84dee9dfb42ab448de281784387ceafdf63881b7c070ee2de7f6ed865c",
+      "git_blob_sha1": "ffef92c48b351a3ed036556ed32dda934e8cf41a"
+    },
+    {
+      "repository": "anthropics/skills",
+      "commit": "41bbe19d1a1a7eaab5e7bb9050a417e5c6cffc8f",
+      "upstream_path": "skills/skill-creator/SKILL.md",
+      "local_path": "安索匹克-anthropic-skills/skills/skill-creator/SKILL.md",
+      "url": "https://raw.githubusercontent.com/anthropics/skills/41bbe19d1a1a7eaab5e7bb9050a417e5c6cffc8f/skills/skill-creator/SKILL.md",
+      "purpose": "基线与使用技能的真实产物对照迭代",
+      "bytes": 33168,
+      "sha256": "dcd4803e61e913e6fc27294184cd3a71f09f5e924ff20c8a9a20173e7b3c2bcf",
+      "git_blob_sha1": "65b3a402dbd09b8e83f9d637c6b553875189085c"
+    },
+    {
+      "repository": "anthropics/skills",
+      "commit": "41bbe19d1a1a7eaab5e7bb9050a417e5c6cffc8f",
+      "upstream_path": "skills/skill-creator/agents/grader.md",
+      "local_path": "安索匹克-anthropic-skills/skills/skill-creator/agents/grader.md",
+      "url": "https://raw.githubusercontent.com/anthropics/skills/41bbe19d1a1a7eaab5e7bb9050a417e5c6cffc8f/skills/skill-creator/agents/grader.md",
+      "purpose": "按断言和实际证据评分并审查评测本身",
+      "bytes": 9049,
+      "sha256": "57134da0c1a4eea33fbd74a1c9c44aa814f07d6bc64de303edb586f941e5d21a",
+      "git_blob_sha1": "558ab05c0a9a8bb062ef4c51823d4d76c3acf7c4"
+    },
+    {
+      "repository": "anthropics/skills",
+      "commit": "41bbe19d1a1a7eaab5e7bb9050a417e5c6cffc8f",
+      "upstream_path": "skills/skill-creator/agents/comparator.md",
+      "local_path": "安索匹克-anthropic-skills/skills/skill-creator/agents/comparator.md",
+      "url": "https://raw.githubusercontent.com/anthropics/skills/41bbe19d1a1a7eaab5e7bb9050a417e5c6cffc8f/skills/skill-creator/agents/comparator.md",
+      "purpose": "隐藏版本身份的产物比较",
+      "bytes": 7287,
+      "sha256": "fe1fc9787c495d864c5d6eada47396478572325fde1b33a96d78bf4b849b7a3e",
+      "git_blob_sha1": "80e00eb45db3ee53a132fc2ba97fd59a7339e563"
+    },
+    {
+      "repository": "anthropics/skills",
+      "commit": "41bbe19d1a1a7eaab5e7bb9050a417e5c6cffc8f",
+      "upstream_path": "skills/skill-creator/agents/analyzer.md",
+      "local_path": "安索匹克-anthropic-skills/skills/skill-creator/agents/analyzer.md",
+      "url": "https://raw.githubusercontent.com/anthropics/skills/41bbe19d1a1a7eaab5e7bb9050a417e5c6cffc8f/skills/skill-creator/agents/analyzer.md",
+      "purpose": "比较后揭盲、失败归因和量表反查",
+      "bytes": 10376,
+      "sha256": "bf68f4cac5a56c673a928c2e6d619586c5b93ea364026ab37547772cb45a663a",
+      "git_blob_sha1": "14e41d6068635f4dd3fb878fd1626312395dda63"
+    }
+  ],
+  "selection_note": "最小方法参考子集；有意不下载上游 scripts、插件注册、执行依赖或所有递归引用；上游文件保持原文，不代表其中执行指令已获准。",
+  "verification": "下载时计算 blob SHA-1 与固定提交树核对；保存后逐件离线核对 SHA-256、字节数、UTF-8 解码。清单不是签名验证或语义质量证明。"
+}
