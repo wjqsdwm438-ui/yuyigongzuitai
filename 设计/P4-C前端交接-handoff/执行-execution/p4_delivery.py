@@ -22,7 +22,11 @@ WETEXT = Path('C:/Users/admin/.cache/modelscope/hub/pengzhendong/wetext')
 
 
 def sha(path):
-    return hashlib.sha256(Path(path).read_bytes()).hexdigest()
+    digest = hashlib.sha256()
+    with Path(path).open('rb') as file:
+        for chunk in iter(lambda: file.read(1024 * 1024), b''):
+            digest.update(chunk)
+    return digest.hexdigest()
 
 
 def read(path):

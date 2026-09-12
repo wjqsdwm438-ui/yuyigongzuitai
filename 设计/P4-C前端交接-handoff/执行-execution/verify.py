@@ -1,5 +1,7 @@
 """Run current-input gates without synthesizing or trusting cached pass flags."""
 import hashlib
+import contextlib
+import io
 import json
 from pathlib import Path
 import socket
@@ -9,6 +11,70 @@ from unittest.mock import patch
 from p4_delivery import HERE, TTS, READY, READINGS, INPUT, REFERENCE, PAIR, sha, read, write
 from p4_delivery import setup, blocked, frontend, make_plan, source_versions, input_identity
 from content_verify import compare, self_check
+
+
+def independent_content(plan, calibration, first_asr):
+    def load(path):
+        return json.loads(Path(path).read_text(encoding='utf-8-sig'))
+    from difflib import SequenceMatcher
+    from content_verify import normalize
+    receipt = load(HERE / 'qwen-run-receipt.json')
+    config = load(HERE / 'qwen-tool-config.json')
+    inputs = load(HERE / 'qwen-inputs.json')
+    if receipt['status'] != 'completed' or receipt['exit_code'] != 0:
+        raise RuntimeError(f"Qwen wrapper did not complete: {receipt['status']}, exit={receipt['exit_code']}")
+    assert sha(config['wrapper_path']) == config['wrapper_sha256']
+    assert sha(config['runner_path']) == config['runner_sha256']
+    for model_file in config['model_files']:
+        assert sha(model_file['path']) == model_file['sha256'], 'Qwen model file identity changed'
+    out = HERE / '独立核验-qwen'
+    batch = load(out / 'batch_summary.json')
+    assert batch['total'] == 4 and batch['cached'] == 0 and batch['success'] == 4 and batch['failed'] == 0
+    assert batch['model_device'].startswith('cuda')
+    expected = {'current_full': plan['plain_text'], **{c['label']: c['expected'] for c in calibration['cases']}}
+    identities = {'current_full': read(HERE / 'delivery-request.json')['output']['sha256'],
+                  **{c['label']: c['audio_sha256'] for c in calibration['cases']}}
+    assert len(inputs) == 4 and {item['role'] for item in inputs} == set(expected), 'Qwen batch coverage differs from acceptance02'
+    cases = {}
+    for item in inputs:
+        assert sha(item['source']) == sha(item['copy']) == item['expected']
+        name = item['role']
+        assert item['expected'] == identities[name], 'Qwen input differs from the fixed delivery/calibration audio'
+        paths = [out / (name + '.qwen3.' + suffix) for suffix in ('txt', 'json', 'report.md')]
+        assert all(p.exists() and p.stat().st_size > 0 for p in paths)
+        result = load(paths[1])
+        assert Path(result['audio_path']).resolve() == Path(item['copy']).resolve(), 'Qwen actual input path mismatch'
+        assert result['audio_sha256'].lower() == item['expected'] == result['request_audio_sha256'].lower(), 'Qwen audio identity mismatch'
+        assert Path(result['model']).resolve() == Path(config['model_path']).resolve(), 'Qwen model path mismatch'
+        runner = Path(config['runner_path'])
+        assert result['tool_fingerprint'].lower() == sha(runner.with_name('transcribe_file.py')) + ':' + sha(runner), 'Qwen source fingerprint changed'
+        assert result['model_device'].startswith('cuda') and result['backend'] == 'transformers'
+        assert result['language'] == 'Chinese' and result['max_new_tokens'] == 1024
+        assert result['max_inference_batch_size'] == 8 and result['ok'] and result['status'] == 'candidate'
+        assert result['text'] == paths[0].read_text(encoding='utf-8').strip()
+        cases[name] = {'audio_sha256': item['expected'], 'raw_json': str(paths[1]), 'raw_json_sha256': sha(paths[1]),
+                       'text': result['text'], 'comparison': compare(expected[name], [{'text': result['text']}])}
+    assert cases['known_bad_12j_sentence2']['comparison']['exit_code'] != 0, 'Qwen missed the known bad sample'
+    content = cases['current_full']['comparison']
+    matches = SequenceMatcher(None, normalize(plan['plain_text']), normalize(cases['current_full']['text']), autojunk=False).get_matching_blocks()
+    decisions = []
+    for difference in first_asr['differences']:
+        a, b = difference['expected_span']
+        supported = any(m.a <= a and b <= m.a + m.size for m in matches)
+        decisions.append({**difference, 'independent_content_evidence': '源文字词获独立转写直接支持' if supported else '未解决',
+                          'resolved_for_content_only': supported, 'phoneme_tone_prosody': '不作结论'})
+    result = {'schema_version': 'p4-independent-content.v1', 'wrapper_receipt_sha256': sha(HERE / 'qwen-run-receipt.json'),
+              'batch_summary': batch, 'cases': cases, 'old_difference_adjudication': decisions,
+              'normal_false_positives': sum(cases[name]['comparison']['exit_code'] != 0 for name in ('human_reference_good', 'user_accepted_g1_good')),
+              'known_bad_false_negatives': 0, 'level': content['level'], 'exit_code': content['exit_code'],
+              'prior_repetition_suspicions': {'count': len(first_asr['excess_repetition_spans']),
+                    'independent_excess_repetition_spans': content['excess_repetition_spans'],
+                    'resolved_for_content_only': content['exit_code'] == 0},
+              'scope': '一次独立ASR内容候选证据；不给目标正文提示，无新增同音容差；声音目标仍交用户。'}
+    if not all(d['resolved_for_content_only'] for d in decisions):
+        result['level'], result['exit_code'] = '嫌疑', 2
+    write(HERE / 'independent-content-result.json', result)
+    return result, content
 
 
 def main():
@@ -24,8 +90,10 @@ def main():
         plan = read(HERE / 'frontend-dry-run.json')
         assert sha(HERE / 'frontend-dry-run.json') == '24f53814c0f934171631f2e9c232f4e6abc34db6795edc817333220f5e9b261f'
         assert source_versions() == plan['source_versions']
-        with patch.object(socket.socket, 'connect', blocked), patch.object(socket.socket, 'connect_ex', blocked), patch.object(socket, 'create_connection', blocked):
+        frontend_output = io.StringIO()
+        with contextlib.redirect_stdout(frontend_output), patch.object(socket.socket, 'connect', blocked), patch.object(socket.socket, 'connect_ex', blocked), patch.object(socket, 'create_connection', blocked):
             current = make_plan(frontend())
+        summary['frontend_diagnostics'] = frontend_output.getvalue().strip()
         assert current['blocks'] == plan['blocks']
         assert current['prompt_text'] == plan['prompt_text']
         summary['checks']['input_and_frontend'] = '通过：身份、源映射、共享编译与实际TN重跑一致'
@@ -85,9 +153,18 @@ def main():
         assert asr['processed_full_file'] and asr['raw_segments']
         assert all(0 <= row['start'] <= row['end'] <= len(pcm)/rate + 0.1 for row in asr['raw_segments'])
         content = compare(plan['plain_text'], asr['raw_segments'])
-        summary['checks']['content'] = content
+        summary['checks']['protocol01_content'] = content
         summary['unresolved'] = content['differences']
         summary['level'], summary['exit_code'] = content['level'], content['exit_code']
+        if (HERE / 'dispatch-02.md').exists():
+            independent, new_content = independent_content(plan, calibration, content)
+            summary['checks']['protocol02_independent_content'] = {
+                'normal_false_positives': independent['normal_false_positives'],
+                'known_bad_false_negatives': independent['known_bad_false_negatives'],
+                'resolved_old_differences': sum(d['resolved_for_content_only'] for d in independent['old_difference_adjudication']),
+                'new_content': new_content, 'detail_path': str(HERE / 'independent-content-result.json')}
+            summary['unresolved'] = new_content['differences']
+            summary['level'], summary['exit_code'] = independent['level'], independent['exit_code']
         summary['artifacts'] = {'audio': str(full), 'raw_asr': str(HERE / 'asr-delivery.json'),
                                 'listening_checklist': str(HERE / '听审清单-listening.md')}
     except AssertionError as exc:
@@ -95,7 +172,10 @@ def main():
     except Exception as exc:
         summary.update(level='工具错误', exit_code=3, error=f'{type(exc).__name__}: {exc}')
     write(HERE / 'verification-result.json', summary)
-    print(json.dumps(summary, ensure_ascii=False, indent=2))
+    print(json.dumps({'level': summary['level'], 'exit_code': summary['exit_code'],
+                      'unresolved_count': len(summary['unresolved']),
+                      'detail_path': str(HERE / 'verification-result.json'),
+                      **({'error': summary['error']} if 'error' in summary else {})}, ensure_ascii=False))
     return summary['exit_code']
 
 
