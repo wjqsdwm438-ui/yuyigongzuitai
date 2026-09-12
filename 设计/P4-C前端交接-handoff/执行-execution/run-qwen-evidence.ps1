@@ -1,7 +1,8 @@
-﻿$ErrorActionPreference = 'Stop'
-$p4Root = $PSScriptRoot
+﻿param([ValidateSet('dispatch02','trial04')][string]$Batch = 'dispatch02')
+$ErrorActionPreference = 'Stop'
+$p4Root = if ($Batch -eq 'trial04') { Join-Path $PSScriptRoot '词组连续-trial04' } else { $PSScriptRoot }
 $p4ReceiptPath = Join-Path $p4Root 'qwen-run-receipt.json'
-if (Test-Path -LiteralPath $p4ReceiptPath) { throw 'dispatch-02 already attempted; no implicit retry' }
+if (Test-Path -LiteralPath $p4ReceiptPath) { throw "$Batch already attempted; no implicit retry" }
 $p4Args = @('-NoProfile', '-ExecutionPolicy', 'Bypass', '-File', 'C:\Users\admin\.codex\tools\qwen3-asr-batch.ps1', '-InputPath', (Join-Path $p4Root '独立核验-inputs'), '-OutDir', (Join-Path $p4Root '独立核验-qwen'), '-Backend', 'transformers', '-RequireCuda')
 $env:HF_HUB_OFFLINE = '1'
 $env:TRANSFORMERS_OFFLINE = '1'

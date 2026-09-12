@@ -180,4 +180,11 @@ def main():
 
 
 if __name__ == '__main__':
+    import argparse
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--batch', choices=['dispatch02', 'trial04'], default='dispatch02')
+    args = parser.parse_args()
+    if args.batch == 'trial04':
+        from phrase_trial import verify_trial
+        raise SystemExit(verify_trial())
     raise SystemExit(main())
