@@ -1,11 +1,14 @@
 # P4 当前恢复点
-- 目标/状态：dispatch-04首轮已执行，批次未完整成功；4份中3份通过内容门槛、1份未解替字，仅3份提交条件隐藏听审。用户声音未判定，P5不放行。
-- 当前授权：用户2026-09-12“PLEASE IMPLEMENT THIS PLAN”及acceptance-04明确专项追加4次；主线程据缺失官方过滤和同接口指令对照诊断解除仅本批停止。4/4已耗尽、剩余0；复验/会计纠音/组合/收口新增授权均0，禁止自动重试。
-- 计数（上海2026-09-12）：历史5请求/12实际块，本批4请求/4块，累计9请求/16块；旧完整交付6/6、旧额外修复4（12-f的1＋12-j的3）及历史连续声音失败2全部保留。失败计费，不跨日归零。
-- 已完成：字段index==5唯一元素（数组下标4）、源[245,319)、74字符与空控制身份；实际TN一块；四条件每次seed1986空缓存及算子CUDA。过滤两分支/三构造器/错误矩阵、备份异常回滚、测量预注册和真实基线全部先于TTS。未改正文、参考、F0、采样或HTTP入口。
-- 内容/测量：协议02同包装器一次7输入成功、41.948秒退出0，两正常误报0/2、坏样本漏报0/1；新内容3一致/1未解。ASR不判读音/韵律；新音频均重定位、记录低能量/列举/非目标边界与语速，无独立端点真值不判效果。原会计41—42秒用户错读反馈本批未修。
-- 当前产物：词组连续-trial04/trial04-result.json区分批次失败与3份听审子集；执行结果.md说明边界/攻击结果；公开听审为词组连续-trial04/盲听-listening/听审清单.md。盲标映射私存，不提前公开；四原始条件、token、ASR和备份保留不入Git。
-- 恢复：两个建设副本均无.git；未改字幕副本，TTS过滤已按源码备份-source-backup/model-before.py恢复。补丁前/最终恢复SHA 3f3b41df14d54d7364f1d92dd53397278a56b7b2b414a63f9038e58fa6505781；补丁后SHA ed5270fd61efae205c28cddb54f9724a93a872f0db293f508112f93f6f46e6bc；preflight.json及batch-receipt.json绑定三点。执行者/root/p4_ab_trial收尾后释放副本/GPU。
-- 历史不覆盖：dispatch-01的98.72秒完整WAV及六块、原协议01的16替字/4重复候选、dispatch-02独立核验原4份均保留；旧自动内容门槛已过但用户声音未过，旧完整PCM逐样本拼接和源映射审阅事实仍成立。旧听审反馈见听审清单-listening.md。
-- 验证：`& 'D:/anaconda3/envs/cosyvoice/python.exe' -X utf8 -B 'E:/yuyigongzuitai/设计/P4-C前端交接-handoff/执行-execution/verify.py' --batch trial04; exit $LASTEXITCODE`；当前实际退出2、未解1；不能用旧默认退出0为本批背书。
-- 主线程复核/下一步：主线程已实际运行本批verify退出2、未解1并核对公开3份清单及恢复SHA，接收受限交付；3份待用户条件隐藏听审，本批4/4剩余0，缺对组不判效果。派单请求Astra/xhigh，实际model/effort不可独立读取；使用utf8-text-read、systematic-debugging和qwen3-asr-local。只显式提交允许源码/文档，真实材料/原始JSON/音频/备份不入Git。
+
+- 目标：按用户方案（2026-09-12）完成 instruct2 整体讲述候选；自动门槛已通过，提交用户盲听；声音通过前 P5 不放行。
+- 状态：执行者为本审计会话（用户直接指挥）；instruct2 候选已交付：86.76 秒完整本段（请求 `8d20619a61bc4be188243d2d29f263b1`，6/6 交付块，`stream=False`、`speed=1.0`、`text_frontend=True`、`seed=1986`、`zero_shot_spk_id=''`）；TTS 与 ASR 进程均退出，GPU 已释放。
+- 已完成：同批准块清单（frontend-dry-run.json 24f53814…）逐字复用；接口单变量切换 zero_shot→inference_instruct2；指令仅为调用参数（未改模型源码）；llm/flow/hift/f0 全 cuda:0（f0 float64）；六块 PCM 逐样本拼接核对通过。
+- 自动核验：Qwen 冻结工具 4/4 成功（cuda），两正常样本误报 0、已知坏样本拦截；候选全文与目标**未解差异 0**；协议01 whisper-small 21 替字/6 重复为已知 2/2 误报工具旁证。节奏对比：86.76s vs 98.72s；停顿 20.7/分 vs 31.6/分；停顿总时长 10.42s vs 16.83s；**目标六词组内部停顿 ≥0.25s 全部为 0**（基线均有）；残留最长停顿为句读处 0.30–0.54s。
+- 下一步：用户盲听两条音频（基线 98.72s vs instruct2 86.76s），判定音色/韵律/整体快慢接近 02 与 41–42s 会计读音；未听审不通过前不放行 P5。听审通过→按同调用配置覆盖其余投诉位置并全段重交付（另批额度）；不通过→弃用候选回退 zero-shot（调用配置已记录），41–42s 会计拼音纠音仍待执行（需额度）。
+- 计数：共享 `request_records.jsonl` 现为 6 记录/18 实块（本候选前 prior 12 块）；另有 trial04（dispatch-04）独立记录 4 请求/4 块未入共享日志，框架合计 10 请求/22 块。本候选为交付额度 6/6（approval_source=用户"按这个方案执行吧"）；修复额度仍 4/4 已用、新增 0。协议02/校准未改动。
+- 对照线索（trial04，dispatch-04）：A0/A1（官方 silent 过滤）输出逐字节相同，本 seed 未触发删除，该路线无效果证据；B0 中性 26.72s；B1 逐项定向 13.36s 但"业财融合"读成"业态融合"（内容失败，被排除盲听）——与用户最终改用整体讲述指令的决定互证。本候选全文"业财融合"三处经 Qwen 冻结核验全部正确。
+- 模型：本会话由用户直接授权执行，无 Astra/xhigh 席位元数据可读，不冒填。
+- 产物：候选目录 `执行-execution/instruct2-候选-candidate/`（run_instruct2.py、asr_instruct2.py、verify_instruct2.py、instruct2-delivery-request.json、asr-instruct2.json、instruct2-结果-result.json、结果-report.md、六块与完整 WAV、独立核验-inputs/、独立核验-qwen/、qwen-run-receipt-instruct2.json 含外层 ExitCode 观察备注）。基线产物（98.72s 版）保持不变。
+- 验证：`& 'D:/anaconda3/envs/cosyvoice/python.exe' -X utf8 -B 'E:/yuyigongzuitai/设计/P4-C前端交接-handoff/执行-execution/instruct2-候选-candidate/verify_instruct2.py'` 退出 0；stdout 紧凑摘要，细节在 JSON。
+- 验收：候选仅过自动门槛；acceptance-01 第 07 项（用户听审）仍未通过；本候选不代表 P4 完成。
+- 保存：本文件覆盖写、≤1页；脚本/结果文档按显式路径提交 Git（385c556 之后新提交），真实材料/音频/原始 JSON 不入 Git。
