@@ -1,0 +1,6 @@
+interface:
+  display_name: "按需澄清与上下文校正"
+  short_description: "在描述规范交付前按需追问、核实前提和统一项目术语，生成供用户复制的校正内容"
+  default_prompt: "使用 $dialogue-sync 核对本次描述与指定上下文，按需澄清后给出可复制结果。"
+policy:
+  allow_implicit_invocation: false
