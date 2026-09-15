@@ -1,5 +1,8 @@
 """总入口真实专项调度检查，不用登记成功冒充语义正确。"""
 import copy
+import json
+import os
+import subprocess
 import sys
 import tempfile
 import unittest
@@ -18,6 +21,8 @@ class DispatchTests(unittest.TestCase):
         self.folder = Path(self.temp.name)
         self.material = self.folder / "材料.txt"
         self.material.write_text("仅当审批完成且备份可用时才允许发布；用户取消时不得发布。", encoding="utf-8")
+        self.other_material = self.folder / "补充.md"
+        self.other_material.write_text("补充材料保留独立来源，不覆盖原材料。", encoding="utf-8")
         self.store = Store(self.folder / "数据", project=ROOT)
 
     def tearDown(self):
@@ -72,9 +77,67 @@ class DispatchTests(unittest.TestCase):
         self.assertIn("未落盘", state["状态"])
         gate = dispatch.start(None, "批准实施", ["授权实施"], "用户要求实际改动")
         self.assertEqual(gate["状态"], "未执行")
+        self.assertIn("通用业务规则文件", gate["原因"])
+        self.assertIn("不包括仓库治理", gate["原因"])
         self.assertEqual(len(self.store.list()), before)
         with self.assertRaises(ValueError):
             dispatch.start(self.store, "含混请求", [], "不知道", self.material)
+
+    def test_multiple_materials_keep_independent_sources(self):
+        materials = [self.material, self.other_material]
+        readonly = dispatch.start(None, "联合审查", ["Agent设计"], "需要核对两份来源", materials, readonly=True)
+        self.assertEqual(
+            readonly["材料集"],
+            [
+                {"路径": str(self.material), "内容": "仅当审批完成且备份可用时才允许发布；用户取消时不得发布。"},
+                {"路径": str(self.other_material), "内容": "补充材料保留独立来源，不覆盖原材料。"},
+            ],
+        )
+        self.assertNotIn("材料", readonly)
+
+        state = dispatch.start(self.store, "联合审查", ["规则原子化"], "需要核对两份来源", materials)
+        self.assertEqual(len(state["来源"]), 2)
+        self.assertEqual(
+            [source["历史内容"] for source in state["来源"]],
+            [
+                "仅当审批完成且备份可用时才允许发布；用户取消时不得发布。",
+                "补充材料保留独立来源，不覆盖原材料。",
+            ],
+        )
+
+    def test_cli_accepts_multiple_materials_in_readonly_mode(self):
+        completed = subprocess.run(
+            [
+                sys.executable,
+                str(ROOT / "工作台.py"),
+                "--项目", str(ROOT),
+                "总入口",
+                "--请求", "联合审查",
+                "--能力", "Agent设计",
+                "--依据", "需要核对两份来源",
+                "--材料", str(self.material), str(self.other_material),
+                "--只读",
+            ],
+            cwd=ROOT,
+            capture_output=True,
+            text=True,
+            encoding="utf-8",
+            env={**os.environ, "PYTHONUTF8": "1"},
+            check=False,
+        )
+        self.assertEqual(completed.returncode, 0, completed.stderr)
+        result = json.loads(completed.stdout)
+        self.assertEqual([item["路径"] for item in result["材料集"]], [str(self.material), str(self.other_material)])
+
+    def test_case_diagnosis_rejects_multiple_materials(self):
+        with self.assertRaisesRegex(ValueError, "每次只接受一份材料"):
+            dispatch.start(
+                self.store,
+                "诊断一个案例",
+                ["案例诊断"],
+                "案例流程按单份材料检索",
+                [self.material, self.other_material],
+            )
 
 
 if __name__ == "__main__":

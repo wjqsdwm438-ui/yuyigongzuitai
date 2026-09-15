@@ -17,6 +17,7 @@ Python 3.11+；既有 Windows 完整环境使用 Python 3.12。无需为确定�
 ```powershell
 python -X utf8 -B 工作台.py 能力
 python -X utf8 -B 工作台.py --项目 C:/work/example 项目状态
+python -X utf8 -B 工作台.py --项目 C:/work/example 总入口 --请求 "联合审查" --能力 Agent设计 --依据 "核对多份来源" --材料 AGENTS.md README.md --只读
 python -X utf8 -B 工作台.py --项目 C:/work/example 治理盘点 --范围 设计
 python -X utf8 -B 脚本-scripts/中文规则检查_v0.py --help
 python -X utf8 -B 脚本-scripts/中文规则检查_v0.py pair --original 原文.md --candidate 候选.md

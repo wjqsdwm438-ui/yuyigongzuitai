@@ -12,7 +12,7 @@ CAPABILITIES = {
     "案例诊断": {"说明": "检索历史案例、比较适用性并形成处置", "产物": []},
     "历史回查": {"说明": "从已保存记录找回当时依据", "产物": []},
     "回归验证": {"说明": "原失败、同类变体、反例、新材料及实际观察", "产物": ["验证对象", "固定预期", "场景与观察", "运行证据", "结论与边界", "维护负担"]},
-    "授权实施": {"说明": "业务文件写入与恢复执行器尚未接通，不能自动实施", "产物": []},
+    "授权实施": {"说明": "通用业务规则文件写入与恢复执行器尚未接通；不包括已接通的仓库治理命令", "产物": []},
 }
 
 
@@ -34,7 +34,9 @@ def start(store, request, selected, reason, material=None, record_id=None, reado
     if len(selected) > 1 and any(c in {"案例诊断", "历史回查", "授权实施"} for c in selected):
         raise ValueError("案例诊断、回查或实施请单独调用并取得结果，再作为专项材料续接，避免伪造串行完成")
     if selected == ["授权实施"]:
-        return {"能力": "授权实施", "状态": "未执行", "原因": "业务文件写入和恢复执行器未接通；建设授权不等于具体业务变更批准", "业务授权": False}
+        return {"能力": "授权实施", "状态": "未执行",
+                "原因": "通用业务规则文件写入和恢复执行器未接通；不包括仓库治理命令；建设授权不等于具体业务变更批准",
+                "业务授权": False}
     if selected == ["历史回查"]:
         if not record_id:
             return {"能力": "历史回查", "状态": "需定位记录", "记录概要": [
@@ -49,20 +51,27 @@ def start(store, request, selected, reason, material=None, record_id=None, reado
         if record["类型"] == "专项产物":
             return {"产物": record, "当时任务": store.get(record["内容"]["任务"])}
         return decision_report(store, record_id)
-    if not material:
+    materials = [Path(material)] if isinstance(material, (str, Path)) else [Path(item) for item in material or []]
+    if not materials:
         raise ValueError("该能力需要用户需求或规则材料；不能用空模板代替实际设计")
     if selected == ["案例诊断"]:
+        if len(materials) != 1:
+            raise ValueError("案例诊断每次只接受一份材料；多份材料请分别处理后再作为专项来源")
         from .workflow import begin
-        return begin(store, material, request)
+        return begin(store, materials[0], request)
     if readonly:
-        return {"状态": "只读专项审阅，未落盘", "用户请求": request, "选择依据": reason,
-                "材料": Path(material).read_text(encoding="utf-8"),
-                "专项": [{"能力": c, "必交产物": CAPABILITIES[c]["产物"]} for c in selected],
-                "业务授权": False}
+        material_set = [{"路径": str(path), "内容": path.read_text(encoding="utf-8")} for path in materials]
+        result = {"状态": "只读专项审阅，未落盘", "用户请求": request, "选择依据": reason,
+                  "材料集": material_set,
+                  "专项": [{"能力": c, "必交产物": CAPABILITIES[c]["产物"]} for c in selected],
+                  "业务授权": False}
+        if len(material_set) == 1:
+            result["材料"] = material_set[0]["内容"]
+        return result
     with store.atomic():
-        evidence = store.capture(material)
+        evidence = [store.capture(path) for path in materials]
         ident = store.add("专项任务", {"问题": request, "选择依据": reason,
-            "能力序列": selected, "来源证据": [evidence]})
+            "能力序列": selected, "来源证据": evidence})
     return packet(store, ident)
 
 

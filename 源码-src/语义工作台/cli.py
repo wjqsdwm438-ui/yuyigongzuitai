@@ -40,7 +40,7 @@ def main():
     entry.add_argument("--请求", required=True)
     entry.add_argument("--能力", nargs="+")
     entry.add_argument("--依据", default="")
-    entry.add_argument("--材料", type=Path)
+    entry.add_argument("--材料", type=Path, nargs="+")
     entry.add_argument("--记录")
     entry.add_argument("--只读", action="store_true")
     specialised = commands.add_parser("提交专项", help="提交当前专项产物，并取得下一能力上下文")
