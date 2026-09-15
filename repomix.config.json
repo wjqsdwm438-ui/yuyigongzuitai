@@ -1,0 +1,41 @@
+{
+  "$schema": "https://repomix.com/schemas/latest/schema.json",
+  "input": {
+    "maxFileSize": 5000000
+  },
+  "output": {
+    "filePath": "导出-exports/repomix-output.xml",
+    "style": "xml",
+    "parsableStyle": false,
+    "compress": false,
+    "fileSummary": true,
+    "directoryStructure": true,
+    "files": true,
+    "removeComments": false,
+    "removeEmptyLines": false,
+    "showLineNumbers": true,
+    "truncateBase64": true
+  },
+  "include": [
+    "README.md",
+    "AGENTS.md",
+    "pyproject.toml",
+    "工作台.py",
+    "源码-src/**",
+    "测试-tests/**",
+    "脚本-scripts/**",
+    "skills/**",
+    "说明-docs/**"
+  ],
+  "ignore": {
+    "useGitignore": true,
+    "useDefaultPatterns": true,
+    "customPatterns": []
+  },
+  "security": {
+    "enableSecurityCheck": true
+  },
+  "tokenCount": {
+    "encoding": "o200k_base"
+  }
+}

@@ -1,4 +1,5 @@
 /.环境-venv/
+/.运行时-runtime/
 /数据-data/
 /导出-exports/
 /临时-tmp/
@@ -6,3 +7,4 @@ __pycache__/
 *.pyc
 *.egg-info/
 .env
+/node_modules/

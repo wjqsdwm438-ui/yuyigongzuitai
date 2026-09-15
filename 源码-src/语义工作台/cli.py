@@ -21,6 +21,21 @@ def main():
     commands.add_parser("初始化", help="建立本地数据库，不安装工具")
     commands.add_parser("项目状态", help="显示当前项目及专属数据目录，不创建数据库")
     commands.add_parser("能力", help="列出工作台各能力与真实实现边界，不打开数据库")
+    govern_inventory = commands.add_parser("治理盘点", help="盘点活动区、退役信号和测试材料候选；不移动文件")
+    govern_inventory.add_argument("--范围", nargs="*")
+    govern_inventory.add_argument("--输出", type=Path)
+    govern_cache = commands.add_parser("治理缓存清单", help="生成 cache 目录内可重建编译缓存的逐文件删除候选；不执行")
+    govern_cache.add_argument("--范围", nargs="*")
+    govern_cache.add_argument("--输出", type=Path)
+    govern_preview = commands.add_parser("治理预演", help="校验分类清单，生成带哈希和冲突检查的动作计划")
+    govern_preview.add_argument("清单", type=Path)
+    govern_preview.add_argument("--输出", type=Path)
+    govern_apply = commands.add_parser("治理执行", help="执行已验证的预演；删除必须批准本次预演编号")
+    govern_apply.add_argument("预演", type=Path)
+    govern_apply.add_argument("--批准删除")
+    govern_apply.add_argument("--回执", type=Path)
+    govern_restore = commands.add_parser("治理恢复", help="按执行回执恢复归档移动；不能恢复删除")
+    govern_restore.add_argument("回执", type=Path)
     entry = commands.add_parser("总入口", help="按智能体识别的任务能力调度，不默认检索案例")
     entry.add_argument("--请求", required=True)
     entry.add_argument("--能力", nargs="+")
@@ -72,7 +87,27 @@ def main():
     args = parser.parse_args()
     store = None
     try:
-        if args.command == "能力" or (args.command == "总入口" and not args.能力):
+        if args.command in {"治理盘点", "治理缓存清单", "治理预演", "治理执行", "治理恢复"}:
+            from . import repository_governance as governance
+            if args.command == "治理盘点":
+                result = governance.inventory(args.项目, args.范围)
+                output = args.输出
+            elif args.command == "治理缓存清单":
+                result = governance.cache_manifest(args.项目, args.范围)
+                output = args.输出
+            elif args.command == "治理预演":
+                result = governance.preview(args.项目, read_json(args.清单))
+                output = args.输出
+            elif args.command == "治理执行":
+                result = governance.apply_plan(args.项目, read_json(args.预演), args.批准删除)
+                output = args.回执
+            else:
+                result = governance.restore(args.项目, read_json(args.回执))
+                output = None
+            if output:
+                output.parent.mkdir(parents=True, exist_ok=True)
+                output.write_text(json.dumps(result, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+        elif args.command == "能力" or (args.command == "总入口" and not args.能力):
             from .dispatch import catalogue
             result = catalogue()
             if args.command == "总入口":

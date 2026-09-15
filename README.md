@@ -17,14 +17,28 @@ Python 3.11+；既有 Windows 完整环境使用 Python 3.12。无需为确定�
 ```powershell
 python -X utf8 -B 工作台.py 能力
 python -X utf8 -B 工作台.py --项目 C:/work/example 项目状态
+python -X utf8 -B 工作台.py --项目 C:/work/example 治理盘点 --范围 设计
 python -X utf8 -B 脚本-scripts/中文规则检查_v0.py --help
 python -X utf8 -B 脚本-scripts/中文规则检查_v0.py pair --original 原文.md --candidate 候选.md
 python -X utf8 -B 测试-tests/test_rule_linter_v0.py
 ```
 
+仓库治理支持逐文件分类、动作预演、冲突停止、归档恢复和删除精确授权。工作标准与清单格式见[仓库治理标准](说明-docs/仓库治理标准-repository-governance.md)；归档区默认不进入搜索上下文。
+
+仓库治理的唯一确定性执行器是工作台原生模块。`organize-tool` 与 `repo-maintenance` 不进入正式链；Project Steward 仅作为机制来源。Repomix 是独立的仓库内容打包能力，不参与文件分类、移动、归档、恢复或删除：
+
+```powershell
+powershell -ExecutionPolicy Bypass -File 脚本-scripts/仓库模型打包.ps1
+powershell -ExecutionPolicy Bypass -File 脚本-scripts/仓库模型打包.ps1 -Remote yamadashy/repomix -Branch main
+```
+
+命令固定使用 Repomix 1.18.0，输出写入已忽略版本管理的 `导出-exports/repomix-output.xml`；远程仓库配置默认不受信任。
+
 加 `--out` 才写检查报告；不得指定已有结果或与输入冲突的路径。词项及句式检测只提示疑似变化，零告警不证明等义。
 
 完整案例检索分支需要 Semantica 项目依赖；固定清单见 `依赖-dependencies/Windows-Python312固定版本.txt`。依赖安装不是本次发布的自动动作。全局入口安装脚本也只能在明确授权后运行。
+
+获准安装后的本地部署与验证步骤见[项目环境部署](说明-docs/项目环境部署-local-setup.md)。`工作台.py`自动转交本仓库的`.环境-venv`解释器。
 
 部分兼容代码与技能仍含原 Windows 部署路径；它们是本地适配约定，不表示业务资料已随仓库发布。旧试点查询需另备获准的本地模型与源材料。本次未更改核心功能来假装跨环境通用。
 

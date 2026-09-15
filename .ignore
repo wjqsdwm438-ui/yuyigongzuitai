@@ -1,0 +1,13 @@
+# 默认检索只看活动区。历史归档必须通过显式路径进入。
+/归档-archive/
+
+# 运行时、导出与隔离试用产物不参与模型默认上下文。
+/.环境-venv/
+/.运行时-runtime/
+/node_modules/
+/数据-data/
+/导出-exports/
+/临时-tmp/
+/临时-tests/
+__pycache__/
+*.pyc

@@ -1,0 +1,22 @@
+# 本地状态、真实业务材料与运行产物不进入模型打包。
+.git/**
+.环境-venv/**
+.运行时-runtime/**
+node_modules/**
+数据-data/**
+导出-exports/**
+临时-tmp/**
+临时-tests/**
+归档-archive/**
+治理-governance/**
+**/__pycache__/**
+**/*.pyc
+**/*.wav
+**/*.mp3
+**/*.flac
+**/*.log
+**/.env
+**/.env.*
+**/*credential*
+**/*secret*
+**/*token*
