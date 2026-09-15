@@ -10,13 +10,17 @@
 
 保留核心程序、通用技能、确定性检查器、机械测试及第三方来源和许可证。发布测试中的综合阴性已替换为合成例子，不代表原业务样本或独立效度成绩。
 
+## 最新状态（2026-09-15）
+
+本地案例检索依赖已恢复，环境修复回归24项通过；C1—C2诊断及后续默认约束维护已完成相应工作台提交。指令配置与文件核验不等于配音执行约束已稳定生效。详见[当前实现状态](说明-docs/当前实现状态.md)及[C2第一批测试问题反思](说明-docs/C2第一批测试问题-反思.md)。
+
 ## 使用
 
 Python 3.11+；既有 Windows 完整环境使用 Python 3.12。无需为确定性检查器安装第三方包。
 
 ```powershell
 python -X utf8 -B 工作台.py 能力
-python -X utf8 -B 工作台.py --项目 C:/work/example 项目状态
+python -X utf8 -B 工作台.py --项目 ./example-project 项目状态
 python -X utf8 -B 脚本-scripts/中文规则检查_v0.py --help
 python -X utf8 -B 脚本-scripts/中文规则检查_v0.py pair --original 原文.md --candidate 候选.md
 python -X utf8 -B 测试-tests/test_rule_linter_v0.py
