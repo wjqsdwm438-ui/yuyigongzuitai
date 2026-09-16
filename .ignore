@@ -9,5 +9,13 @@
 /导出-exports/
 /临时-tmp/
 /临时-tests/
+/治理-governance/
+/feishu/
 __pycache__/
 *.pyc
+*.wav
+*.mp3
+*.flac
+*.log
+*.reg
+*.lnk
