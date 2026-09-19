@@ -1,6 +1,0 @@
-interface:
-  display_name: "描述规范2"
-  short_description: "保真整理提示词，按需回读上下文、追问和核实前提，输出供用户审核复制的说明"
-  default_prompt: "$描述规范2 整理我的任务要求。"
-policy:
-  allow_implicit_invocation: false

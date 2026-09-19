@@ -21,6 +21,10 @@ def main():
     commands.add_parser("初始化", help="建立本地数据库，不安装工具")
     commands.add_parser("项目状态", help="显示当前项目及专属数据目录，不创建数据库")
     commands.add_parser("能力", help="列出工作台各能力与真实实现边界，不打开数据库")
+    feishu = commands.add_parser("飞书上传", help="使用飞书自建应用上传一个文件到指定云空间文件夹")
+    feishu.add_argument("文件", type=Path)
+    feishu.add_argument("--父节点", required=True, help="飞书目标文件夹 token")
+    feishu.add_argument("--预演", action="store_true", help="只检查源文件与参数，不调用飞书")
     govern_inventory = commands.add_parser("治理盘点", help="盘点活动区、退役信号和测试材料候选；不移动文件")
     govern_inventory.add_argument("--范围", nargs="*")
     govern_inventory.add_argument("--输出", type=Path)
@@ -87,7 +91,19 @@ def main():
     args = parser.parse_args()
     store = None
     try:
-        if args.command in {"治理盘点", "治理缓存清单", "治理预演", "治理执行", "治理恢复"}:
+        if args.command == "飞书上传":
+            from .feishu_upload import FeishuUploadError, upload_from_environment
+            if not args.文件.is_file():
+                raise ValueError(f"源文件不存在或不是文件：{args.文件}")
+            if not args.父节点.strip():
+                raise ValueError("必须指定飞书目标文件夹 token（--父节点）")
+            if args.预演:
+                result = {"状态": "预演通过", "文件名": args.文件.name, "文件大小": args.文件.stat().st_size,
+                          "目标": "飞书云空间", "调用飞书": False}
+            else:
+                result = upload_from_environment(args.文件, parent_node=args.父节点)
+                result["状态"] = "上传完成"
+        elif args.command in {"治理盘点", "治理缓存清单", "治理预演", "治理执行", "治理恢复"}:
             from . import repository_governance as governance
             if args.command == "治理盘点":
                 result = governance.inventory(args.项目, args.范围)

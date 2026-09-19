@@ -16,6 +16,8 @@ Git 发布内容是经过数据排除的源码快照，不包含原始本地 Git
 
 ## 使用
 
+在已加载工作台核心 Skill 的智能体会话中提出“批量整理这些材料”，由智能体按[批量整理流程](skills/语义规则工作台-workbench/SKILL.md#批量整理)扫描、归并并生成重点页；现有命令仅在需要时辅助取证或验证。CLI 没有“批量整理”子命令，也不自动完成语义归并。
+
 Python 3.11+；既有 Windows 完整环境使用 Python 3.12。无需为确定性检查器安装第三方包。
 
 ```powershell
@@ -27,6 +29,31 @@ python -X utf8 -B 脚本-scripts/中文规则检查_v0.py --help
 python -X utf8 -B 脚本-scripts/中文规则检查_v0.py pair --original 原文.md --candidate 候选.md
 python -X utf8 -B 测试-tests/test_rule_linter_v0.py
 ```
+
+专项交付由`总入口`建立任务，再按返回模板提交；案例诊断使用独立闭环。命令参数以各子命令的`--help`为准：
+
+```powershell
+python -X utf8 -B 工作台.py --项目 <项目根> 总入口 --请求 <请求> --能力 <能力...> --依据 <依据> --材料 <材料...>
+python -X utf8 -B 工作台.py --项目 <项目根> 提交专项 <产物.json>
+python -X utf8 -B 工作台.py --项目 <项目根> 专项进度 <专项编号>
+python -X utf8 -B 工作台.py --项目 <项目根> 专项报告 <专项编号>
+python -X utf8 -B 工作台.py --项目 <项目根> 处理 <材料文件> --问题 <问题> --预期 <已确认预期或未知>
+python -X utf8 -B 工作台.py --项目 <项目根> 提交审阅 <审阅.json>
+python -X utf8 -B 工作台.py --项目 <项目根> 导出报告 <决定编号>
+python -X utf8 -B 工作台.py --项目 <项目根> 任务列表
+python -X utf8 -B 工作台.py --项目 <项目根> 回查 <任务或决定编号>
+python -X utf8 -B 工作台.py --项目 <项目根> 续接 <案例、任务或决定编号>
+```
+
+飞书云空间上传使用飞书自建应用凭据。先在当前进程设置 `FEISHU_APP_ID` 和
+`FEISHU_APP_SECRET`，再显式提供目标文件夹 token；凭据不会写入命令参数、源码或日志：
+
+```powershell
+python -X utf8 -B 工作台.py 飞书上传 D:\zhishiku\ds4.1.txt --父节点 <飞书文件夹token> --预演
+python -X utf8 -B 工作台.py 飞书上传 D:\zhishiku\ds4.1.txt --父节点 <飞书文件夹token>
+```
+
+上传接口使用自建应用 `tenant_access_token` 和云空间文件上传 API；应用需具备对应云空间写入权限。
 
 仓库治理支持逐文件分类、动作预演、冲突停止、归档恢复和删除精确授权。工作标准与清单格式见[仓库治理标准](说明-docs/仓库治理标准-repository-governance.md)；归档区默认不进入搜索上下文。
 
