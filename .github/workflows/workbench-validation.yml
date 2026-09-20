@@ -1,0 +1,35 @@
+name: Workbench validation
+on:
+  push:
+    branches: [main, 'feat/rule-retirement-audit-*']
+  pull_request:
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: workbench-validation-${{ github.ref }}
+  cancel-in-progress: true
+jobs:
+  baseline:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Record source revision
+        run: git rev-parse HEAD
+      - name: Run existing deterministic tests
+        run: python -X utf8 -B -m unittest discover -s 测试-tests -p 'test_*.py' -v
+      - name: Archive tracked source for independent local review
+        if: always()
+        run: git archive --format=zip HEAD -o workbench-source.zip
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: workbench-source-${{ github.sha }}
+          path: workbench-source.zip
+          retention-days: 7
