@@ -12,22 +12,38 @@ concurrency:
 jobs:
   baseline:
     runs-on: ubuntu-latest
-    timeout-minutes: 10
+    timeout-minutes: 20
+    env:
+      HF_HUB_OFFLINE: '1'
+      TRANSFORMERS_OFFLINE: '1'
+      HF_HUB_DISABLE_TELEMETRY: '1'
+      SEMANTICA_DISABLE_PROGRESS: '1'
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
         with:
           persist-credentials: false
-      - uses: actions/setup-python@v5
+      - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065
         with:
           python-version: '3.12'
-      - name: Record source revision
-        run: git rev-parse HEAD
-      - name: Run existing deterministic tests
-        run: python -X utf8 -B -m unittest discover -s 测试-tests -p 'test_*.py' -v
+      - name: Prepare isolated test environment
+        run: |
+          python -m venv .环境-venv
+          .环境-venv/bin/python -m pip install 'semantica==0.6.8'
+          mkdir -p 临时-tmp
+      - name: Record source and dependency versions
+        run: |
+          git rev-parse HEAD
+          .环境-venv/bin/python -m pip freeze
+      - name: Run all existing tests with real component
+        run: .环境-venv/bin/python -X utf8 -B -m unittest discover -s 测试-tests -p 'test_*.py' -v
+      - name: Run rule linter controls
+        run: .环境-venv/bin/python -X utf8 -B 测试-tests/test_rule_linter_v0.py
+      - name: Run Skill harness self test
+        run: .环境-venv/bin/python -X utf8 -B skills/语义规则工作台-workbench/测试-tests/regression.py self-test
       - name: Archive tracked source for independent local review
         if: always()
         run: git archive --format=zip HEAD -o workbench-source.zip
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
         if: always()
         with:
           name: workbench-source-${{ github.sha }}
