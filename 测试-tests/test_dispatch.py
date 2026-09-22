@@ -17,7 +17,7 @@ from 语义工作台 import dispatch
 
 class DispatchTests(unittest.TestCase):
     def setUp(self):
-        self.temp = tempfile.TemporaryDirectory(dir=ROOT / "临时-tmp")
+        self.temp = tempfile.TemporaryDirectory()
         self.folder = Path(self.temp.name)
         self.material = self.folder / "材料.txt"
         self.material.write_text("仅当审批完成且备份可用时才允许发布；用户取消时不得发布。", encoding="utf-8")

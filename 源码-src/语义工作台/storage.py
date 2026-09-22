@@ -149,6 +149,8 @@ class Store:
             "复用审阅": ["新案例", "旧案例", "结论", "依据", "关键差异"],
             "验证": ["对象", "预期", "观察", "结论", "证据"],
             "处理任务": ["案例", "问题", "上下文"],
+            "退役巡检": ["问题", "摘要", "来源证据", "产物"],
+            "退役审阅": ["问题", "巡检", "条目", "绑定版本", "结论", "依据", "复审日期", "来源证据"],
             "专项任务": ["问题", "选择依据", "能力序列", "来源证据"],
             "专项产物": ["任务", "能力", "产物", "来源证据", "审阅边界", "摘要"],
         }
@@ -175,6 +177,12 @@ class Store:
             from .dispatch import CAPABILITIES
             if not isinstance(payload["能力序列"], list) or not payload["能力序列"] or any(c not in CAPABILITIES or not CAPABILITIES[c]["产物"] for c in payload["能力序列"]):
                 raise ValueError("专项任务能力序列无效")
+        if kind == "退役巡检" and not isinstance(payload["产物"], dict):
+            raise ValueError("巡检产物必须是对象")
+        if kind == "退役审阅":
+            self.require_ref(payload["巡检"], "退役巡检")
+            if payload["结论"] not in {"保留有效", "建议退役", "历史保留", "证据不足"}:
+                raise ValueError("未知退役审阅结论")
         if kind == "专项产物":
             self.require_ref(payload["任务"], "专项任务")
             if not isinstance(payload["产物"], dict):

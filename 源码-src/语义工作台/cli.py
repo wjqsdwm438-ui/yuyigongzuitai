@@ -2,6 +2,7 @@
 import argparse
 import json
 import sqlite3
+import sys
 from pathlib import Path
 from .storage import Store, read_json
 from .projects import open_project, project_data, reference_project, canonical
@@ -11,6 +12,9 @@ ROOT = Path(__file__).resolve().parents[2]
 
 
 def main():
+    if hasattr(sys.stdout, "reconfigure"):
+        sys.stdout.reconfigure(encoding="utf-8")
+        sys.stderr.reconfigure(encoding="utf-8")
     parser = argparse.ArgumentParser(description="语义规则工作台：本地记录、历史证据和候选审阅", add_help=False)
     parser.add_argument("-h", "--help", action="help", help="显示帮助并退出")
     parser._positionals.title = "操作"
@@ -21,6 +25,14 @@ def main():
     commands.add_parser("初始化", help="建立本地数据库，不安装工具")
     commands.add_parser("项目状态", help="显示当前项目及专属数据目录，不创建数据库")
     commands.add_parser("能力", help="列出工作台各能力与真实实现边界，不打开数据库")
+    retirement_scan = commands.add_parser("退役巡检", help="扫描指导规则和指针、生成语义复审队列；默认只读")
+    retirement_scan.add_argument("--范围", nargs="+")
+    retirement_mode = retirement_scan.add_mutually_exclusive_group()
+    retirement_mode.add_argument("--记录", action="store_true", help="将快照保存到当前项目库，复用既有审阅记忆")
+    retirement_mode.add_argument("--只读", action="store_true", help="不创建或修改数据库及报告")
+    retirement_scan.add_argument("--输出", type=Path, help="只允许新建报告，拒绝覆盖；与只读互斥")
+    retirement_review = commands.add_parser("退役审阅", help="保存有证据的语义审阅；不批准退役动作")
+    retirement_review.add_argument("文件", type=Path)
     feishu = commands.add_parser("飞书上传", help="使用飞书自建应用上传一个文件到指定云空间文件夹")
     feishu.add_argument("文件", type=Path)
     feishu.add_argument("--父节点", required=True, help="飞书目标文件夹 token")
@@ -91,7 +103,31 @@ def main():
     args = parser.parse_args()
     store = None
     try:
-        if args.command == "飞书上传":
+        if args.command == "退役巡检":
+            from . import retirement
+            if args.只读 and args.输出:
+                raise ValueError("只读模式不写报告")
+            if args.输出 and args.输出.exists():
+                raise ValueError("报告路径已存在，禁止覆盖")
+            directory = args.数据目录 or project_data(args.项目)
+            # 无库的只读运行也不新建目录；已有库以 SQLite 只读连接使用处置记忆。
+            if args.记录 or (directory / "workbench.sqlite3").exists():
+                store = open_project(args.项目, directory, readonly=not args.记录)
+            result = retirement.scan(args.项目, args.范围, store, record=args.记录)
+            result["中文报告"] = retirement.report(result)
+            result["审阅模板"] = retirement.template(result)
+            if args.输出:
+                args.输出.parent.mkdir(parents=True, exist_ok=True)
+                with args.输出.open("x", encoding="utf-8") as handle:
+                    handle.write(json.dumps(result, ensure_ascii=False, indent=2) + "\n")
+        elif args.command == "退役审阅":
+            from .retirement import review
+            directory = args.数据目录 or project_data(args.项目)
+            if not (directory / "workbench.sqlite3").is_file():
+                raise ValueError("尚无巡检库，请先完成获准记录的巡检")
+            store = open_project(args.项目, directory)
+            result = review(store, read_json(args.文件))
+        elif args.command == "飞书上传":
             from .feishu_upload import FeishuUploadError, upload_from_environment
             if not args.文件.is_file():
                 raise ValueError(f"源文件不存在或不是文件：{args.文件}")

@@ -4,15 +4,25 @@ on:
     branches: [main, 'feat/rule-retirement-audit-*']
   pull_request:
   workflow_dispatch:
+    inputs:
+      publish_release:
+        description: '已取得本次公开 Release 授权'
+        required: true
+        type: boolean
+        default: false
 permissions:
   contents: read
 concurrency:
   group: workbench-validation-${{ github.ref }}
   cancel-in-progress: true
 jobs:
-  baseline:
-    runs-on: ubuntu-latest
-    timeout-minutes: 20
+  validation:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 25
     env:
       HF_HUB_OFFLINE: '1'
       TRANSFORMERS_OFFLINE: '1'
@@ -25,27 +35,59 @@ jobs:
       - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065
         with:
           python-version: '3.12'
-      - name: Prepare isolated test environment
+      - name: Prepare isolated environment
+        shell: bash
         run: |
           python -m venv .环境-venv
-          .环境-venv/bin/python -m pip install 'semantica==0.6.8'
-          mkdir -p 临时-tmp
+          python -c "import os; from pathlib import Path; p=Path('.环境-venv') / ('Scripts' if os.name=='nt' else 'bin'); open(os.environ['GITHUB_PATH'],'a',encoding='utf-8').write(str(p.resolve())+'\n')"
+      - name: Install real case retrieval component
+        run: python -m pip install 'semantica==0.6.8'
       - name: Record source and dependency versions
         run: |
           git rev-parse HEAD
-          .环境-venv/bin/python -m pip freeze
-      - name: Run all existing tests with real component
-        run: .环境-venv/bin/python -X utf8 -B -m unittest discover -s 测试-tests -p 'test_*.py' -v
+          python -m pip freeze
+      - name: Run full unittest regression
+        run: python -X utf8 -B -m unittest discover -s 测试-tests -p 'test_*.py' -v
       - name: Run rule linter controls
-        run: .环境-venv/bin/python -X utf8 -B 测试-tests/test_rule_linter_v0.py
+        run: python -X utf8 -B 测试-tests/test_rule_linter_v0.py
       - name: Run Skill harness self test
-        run: .环境-venv/bin/python -X utf8 -B skills/语义规则工作台-workbench/测试-tests/regression.py self-test
-      - name: Archive tracked source for independent local review
+        run: python -X utf8 -B skills/语义规则工作台-workbench/测试-tests/regression.py self-test
+      - name: Exercise remote adapter without external writes
+        run: python -X utf8 -B 脚本-scripts/退役巡检持续运行.py --离线
+      - name: Archive tracked source
         if: always()
         run: git archive --format=zip HEAD -o workbench-source.zip
       - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
         if: always()
         with:
-          name: workbench-source-${{ github.sha }}
+          name: workbench-source-${{ matrix.os }}-${{ github.sha }}
           path: workbench-source.zip
           retention-days: 7
+  release:
+    needs: validation
+    if: github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/main' && inputs.publish_release == true
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065
+        with:
+          python-version: '3.12'
+      - name: Publish versioned source after successful regression
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          VERSION="v$(python -c "import tomllib; print(tomllib.load(open('pyproject.toml','rb'))['project']['version'])")"
+          export VERSION
+          gh release list --limit 100 --json tagName > /tmp/releases.json
+          if python -c "import json,os,sys; sys.exit(0 if any(r['tagName']==os.environ['VERSION'] for r in json.load(open('/tmp/releases.json'))) else 1)"; then
+            echo "Version already released; existing release unchanged."
+            exit 0
+          fi
+          git archive --format=zip HEAD -o "workbench-${VERSION}.zip"
+          gh release create "$VERSION" "workbench-${VERSION}.zip" --target "$GITHUB_SHA" --title "$VERSION 指导规则退役巡检" --notes-file "说明-docs/发布说明-${VERSION}.md"
